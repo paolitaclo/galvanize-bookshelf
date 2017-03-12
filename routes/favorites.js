@@ -6,11 +6,6 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../knex');
 const { camelizeKeys, decamelizeKeys } = require('humps');
-const cookieParser = require('cookie-parser');
-const bcrypt = require('bcrypt-as-promised');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv').config();
-const bodyParser = require('body-parser');
 
 router.route('/favorites')
   .get((req, res, next) => {
@@ -19,12 +14,11 @@ router.route('/favorites')
       res.status(401).send('Unauthorized');
     }
     else {
-      return knex('favorites')
-      .orderBy('author')
+      return knex('favorites').join('books', 'favorites.book_id', 'books.id')
       .then((favorites) => {
-        console.log(favorites);
-        res.set('Content-Type', /json/);
-        res.send(camelizeKeys(favorites));
+        res.json(camelizeKeys(favorites));
+        // res.set('Content-Type', 'application/json');
+        // res.send(camelizeKeys(favorites));
       })
       .catch((err) => {
         next();
