@@ -17,17 +17,11 @@ router.route('/token')
     res.status(200).send('false');
   })
   .post((req, res, next) => {
-    return knex('users')
+    return knex('users').where('email', req.body.email)
     .then((users) => {
       return bcrypt.compare(req.body.password, users[0].hashed_password)
       .then((response) => {
-        if (response === false) {
-          res.set('Content-Type', 'text/plain');
-          res.status(400).send('Bad email or password');
-        }
-        else {
           return response;
-        }
       })
       .then((userAuth) => {
         console.log(userAuth);
@@ -41,6 +35,8 @@ router.route('/token')
         res.send(camelizeKeys(users[0]));
       })
       .catch((err) => {
+        res.set('Content-Type', 'text/plain');
+        res.status(400).send('Bad email or password');
         next(err);
       });
     });
