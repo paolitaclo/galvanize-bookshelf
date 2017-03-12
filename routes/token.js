@@ -13,8 +13,7 @@ const bodyParser = require('body-parser');
 
 router.route('/token')
   .get((req, res) => {
-    console.log('cookie: ', req.cookie.token, req.cookie);
-    if (req.cookie) {
+    if (req.cookies.token) {
       res.set('Content-Type', 'application/json');
       res.status(200).send('true');
     }
@@ -23,7 +22,7 @@ router.route('/token')
       res.status(200).send('false');
     }
   })
-  .post((req, res, next) => {
+  .post((req, res) => {
     if (!req.body.email) {
       res.set('Content-Type', 'text/plain');
       res.status(400).send('Email must not be blank');
