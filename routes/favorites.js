@@ -1,46 +1,40 @@
-'use strict';
-
 const express = require('express');
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
 const knex = require('../knex');
+const jwt = require('jsonwebtoken');
 const { camelizeKeys, decamelizeKeys } = require('humps');
-const bodyParser = require('body-parser');
 
 router.route('/favorites')
   .get((req, res, next) => {
-    if (!req.cookies.token) {
-      res.set('Content-Type', 'text/plain');
-      res.status(401).send('Unauthorized');
-    }
-    else {
+    if (req.cookies.token) {
       return knex('favorites').join('books', 'favorites.book_id', 'books.id')
       .then((favorites) => {
         res.json(camelizeKeys(favorites));
-        // res.set('Content-Type', 'application/json');
-        // res.send(camelizeKeys(favorites));
       })
       .catch((err) => {
         next();
       });
+    } else {
+      res.set('Content-Type', 'text/plain');
+      res.status(401).send('Unauthorized');
     }
   })
   .post((req, res, next) => {
-    if (!req.cookies.token) {
+    const token = req.cookies.token;
+    if (!token) {
       res.set('Content-Type', 'text/plain');
       res.status(401).send('Unauthorized');
     }
     else {
-      console.log('fav: ', req.body);
-
+      const decodedToken = jwt.decode(token);
       return knex('favorites')
       .insert({
-        book_id: req.body.bookId
+        book_id: req.body.bookId,
+        user_id: decodedToken.sub
       }, '*')
       .then((favorites) => {
-        console.log('new fav: ', favorites);
-        console.log(camelizeKeys(favorites[0]));
         res.json(camelizeKeys(favorites[0]));
       })
       .catch((err) => {
@@ -52,8 +46,7 @@ router.route('/favorites')
     if (!req.cookies.token) {
       res.set('Content-Type', 'text/plain');
       res.status(401).send('Unauthorized');
-    }
-    else {
+    } else {
       let favorite;
       knex('favorites')
       .where('book_id', req.body.bookId)
