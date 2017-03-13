@@ -1,6 +1,5 @@
 const express = require('express');
 
-// eslint-disable-next-line new-cap
 const router = express.Router();
 const knex = require('../knex');
 const jwt = require('jsonwebtoken');
@@ -9,7 +8,7 @@ const { camelizeKeys, decamelizeKeys } = require('humps');
 router.route('/favorites')
   .get((req, res, next) => {
     if (req.cookies.token) {
-      return knex('favorites').join('books', 'favorites.book_id', 'books.id')
+      knex('favorites').join('books', 'favorites.book_id', 'books.id')
       .then((favorites) => {
         res.json(camelizeKeys(favorites));
       })
@@ -26,13 +25,12 @@ router.route('/favorites')
     if (!token) {
       res.set('Content-Type', 'text/plain');
       res.status(401).send('Unauthorized');
-    }
-    else {
+    } else {
       const decodedToken = jwt.decode(token);
       return knex('favorites')
       .insert({
         book_id: req.body.bookId,
-        user_id: decodedToken.sub
+        user_id: decodedToken.sub,
       }, '*')
       .then((favorites) => {
         res.json(camelizeKeys(favorites[0]));
@@ -65,10 +63,10 @@ router.route('/favorites')
           res.set('Content-Type', 'application/json');
           res.send(camelizeKeys(favorite));
         })
-        .catch((err) => {
+        .catch(() => {
           next();
         });
-      })
+      });
     }
   });
 
@@ -76,10 +74,9 @@ router.get('/favorites/:check', (req, res, next) => {
   if (!req.cookies.token) {
     res.set('Content-Type', 'text/plain');
     res.status(401).send('Unauthorized');
-  }
-  else {
-    let queryDecam = decamelizeKeys(req.query);
-    let key = (Object.getOwnPropertyNames(queryDecam)).toString();
+  } else {
+    const queryDecam = decamelizeKeys(req.query);
+    const key = (Object.getOwnPropertyNames(queryDecam)).toString();
 
     return knex('favorites')
     .where(key, Number(queryDecam[key]))
@@ -87,13 +84,12 @@ router.get('/favorites/:check', (req, res, next) => {
       if (favorite[0]) {
         res.set('Content-Type', 'application/json');
         res.status(200).send('true');
-      }
-      else {
+      } else {
         res.set('Content-Type', 'application/json');
         res.status(200).send('false');
       }
     })
-    .catch((err) => {
+    .catch(() => {
       next();
     });
   }

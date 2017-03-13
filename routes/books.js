@@ -1,12 +1,11 @@
 // eslint-disable-next-line new-cap
-'use strict';
-
 const express = require('express');
+
 const router = express.Router();
 const knex = require('../knex');
 
-router.route('/books').
-  get((req, res, next) => {
+router.route('/books')
+  .get((req, res, next) => {
     knex('books')
       .orderBy('title')
       .then((books) => {
@@ -67,7 +66,7 @@ router.route('/books/:id')
         description: req.body.description,
         cover_url: req.body.cover_url
       }, '*')
-      .where('id', req.params.id)
+      .where('id', req.params.id);
     })
     .then((books) => {
       res.send(books[0]);
@@ -89,7 +88,7 @@ router.route('/books/:id')
       book = row;
       return knex('books')
       .del()
-      .where('id', req.params.id)
+      .where('id', req.params.id);
     })
     .then(() => {
       delete book.id;
