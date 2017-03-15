@@ -4,6 +4,8 @@ const router = express.Router();
 const knex = require('../knex');
 const jwt = require('jsonwebtoken');
 const { camelizeKeys, decamelizeKeys } = require('humps');
+const ev = require('express-validation');
+const validations = require('../validations/favorites');
 
 function validateToken(req, res, next) {
   jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, decodedClaim) => {
@@ -27,7 +29,7 @@ router.route('/favorites')
         next(err);
       });
   })
-  .post(validateToken, (req, res, next) => {
+  .post(ev(validations.post), validateToken, (req, res, next) => {
     const decodedToken = req.token;
     return knex('favorites')
     .insert({

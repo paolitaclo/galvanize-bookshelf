@@ -3,6 +3,8 @@ const express = require('express');
 
 const router = express.Router();
 const knex = require('../knex');
+const ev = require('express-validation');
+const validations = require('../validations/books');
 
 router.route('/books')
   .get((req, res, next) => {
@@ -16,7 +18,7 @@ router.route('/books')
         next(err);
       });
   })
-  .post((req, res, next) => {
+  .post(ev(validations.post), (req, res, next) => {
     knex('books')
       .insert({
         title: req.body.title,
@@ -26,7 +28,7 @@ router.route('/books')
         cover_url: req.body.cover_url
       }, '*')
       .then((books) => {
-        res.send(books[0]);
+        res.json(books[0]);
       })
       .catch((err) => {
         res.sendStatus(400);
